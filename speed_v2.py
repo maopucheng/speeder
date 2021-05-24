@@ -5,7 +5,6 @@ from machine import Pin
 
 hall = Pin(36, Pin.IN)
 
-
 # init 速度
 speed = 0
 position = False  # 磁铁位置：在感应区为T，不在感应区为F
@@ -17,7 +16,7 @@ time_gap = t.ticks_diff(now, last_time)  # 两个时间点的时间差，单位�
 print(time_gap)
 
 
-def main():
+def getData():
     global speed, position, i, wheel_len
     global last_time, now, time_gap
 
@@ -41,4 +40,4 @@ def main():
             t.sleep_ms(20)
 
 
-main()
+getData()
