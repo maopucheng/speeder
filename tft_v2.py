@@ -1,5 +1,4 @@
 import utime
-import utime as t
 from machine import Pin, SPI
 import st7789
 
@@ -20,18 +19,6 @@ tft = st7789.ST7789(
 
 tft.init()
 
-#初始化引脚
-hall = Pin(36, Pin.IN)
-
-# init 所有参数
-speed = 0
-position = False  # 磁铁位置：在感应区为T，不在感应区为F
-i = 0  # 定义计数器
-wheel_len = 2  # 自行车轮子周长，单位，米
-last_time = t.ticks_ms()  # 上次时间点
-now = t.ticks_ms()  # 当前时间点
-time_gap = t.ticks_diff(now, last_time)  # 两个时间点的时间差，单位毫秒
-
 def display(speed, distance=0 , seconds=0):
     
     global tft
@@ -51,27 +38,10 @@ def display(speed, distance=0 , seconds=0):
     tft.fill_rect(5+16*5, 105-16, 16*5, 32, st7789.BLACK)
     tft.text(font1, '{:3.1f}'.format(distance), 5+16*5, 105-16, st7789.WHITE, st7789.BLACK)
     tft.text(font2, "KM", 5+16*10, 105, st7789.WHITE, st7789.BLACK)
-
-def getData():
-    global speed, position, i, wheel_len
-    global last_time, now, time_gap
-    # 读取当前状态，status为0，表示有磁力感应到
-    status = hall.value()
-
-    if status == 0 and position == False:
-        i += 1
-        now = t.ticks_ms()
-        time_gap = t.ticks_diff(now, last_time)  # 注意是毫秒
-        if time_gap != 0:
-            speed = int(wheel_len/(time_gap/1000)*3.6)
-        last_time = now
-        position = True  # 设置磁铁位置
-        print(speed, "km/h")
-    elif status == 1:
-        position = False  # 设置磁铁位置
-        t.sleep_ms(20)
+  
 
 while True:
-    getData()
-    display(speed,10,500)
-    utime.sleep_ms(50)
+    display(3,2,630)
+    utime.sleep(1)
+    display(20,12,30)
+    utime.sleep(1)
