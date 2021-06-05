@@ -27,10 +27,11 @@ def getData():
             speed = int(wheel_len/(time_gap/1000)*3.6)
         last_time = now
         position = True  # 设置磁铁位置
-        print(speed, "km/h")
+        print(speed, "km/h", time_gap)
     elif status == 1:
         position = False  # 设置磁铁位置
         utime.sleep_ms(20)
 
+print("start")
 while True:
     getData()

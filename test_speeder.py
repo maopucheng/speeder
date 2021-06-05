@@ -49,7 +49,7 @@ def getData():
         last_time = now
         position = True  # 设置磁铁位置
         g_distance = wheel_len*i #骑行距离
-        #print(speed, "km/h", "i=", i)
+        print(speed, "km/h", "i=", i)
         g_time = utime.ticks_diff(now, first_time)   
         display(speed,g_distance/1000,int(g_time/1000))     
     elif status == 1:
