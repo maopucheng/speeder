@@ -34,7 +34,7 @@ def main():
     np = NeoPixel(pin, 8)   # create NeoPixel driver on GPIO0 for 8 pixels
     
     while True:
-      
+      #
         for rotation in range(4):
             tft.rotation(rotation)
             tft.fill(0)
