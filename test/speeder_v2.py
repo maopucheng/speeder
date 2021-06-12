@@ -86,11 +86,11 @@ def display(speed, distance=0 , seconds=0):
 
 def led(speed):
     if speed<15:
-        np[1] = (0,0,200)
+        np[1] = (0,0,50)
     elif 15<speed<25:
-        np[2] = (0,200,0)
+        np[2] = (0,50,0)
     else:
-        np[3] = (200,0,0)
+        np[3] = (50,0,0)
     np.write()
 
 #先初始化显示速度

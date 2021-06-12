@@ -1,7 +1,7 @@
 import utime
 from machine import Pin, SPI
 import st7789
-
+from neopixel import NeoPixel
 import vga1_bold_16x32 as font1
 import vga1_bold_16x16 as font2
 
@@ -18,10 +18,13 @@ tft = st7789.ST7789(
     dc=Pin(16, Pin.OUT),
     backlight=Pin(4, Pin.OUT),
     rotation=3)
-
 tft.init()
 
-# init 所有参数
+#初始化LED灯带
+pin = Pin(22, Pin.OUT, Pin.PULL_UP)
+np = NeoPixel(pin, 8)
+
+# init其他所有参数
 speed = 0
 position = False  # 磁铁位置：在感应区为T，不在感应区为F
 i = 0  # 定义计数器
@@ -54,12 +57,9 @@ def getData():
         display(speed,g_distance/1000,int(g_time/1000))     
     elif status == 1:
         position = False  # 设置磁铁位置
-        utime.sleep_ms(20)
 
 def display(speed, distance=0 , seconds=0):
-    
-    global tft
-    
+  
     #line1:time    
     tft.text(font2, "time:", 5, 5+16, st7789.WHITE, st7789.BLACK)
     time_str = str(seconds//60)+'m'+str(seconds%60)+'s'
@@ -75,8 +75,31 @@ def display(speed, distance=0 , seconds=0):
     tft.fill_rect(5+16*5, 105-16, 16*5, 32, st7789.BLACK)
     tft.text(font1, '{:2.2f}'.format(distance), 5+16*5, 105-16, st7789.WHITE, st7789.BLACK)
     tft.text(font2, "KM", 5+16*10, 105, st7789.WHITE, st7789.BLACK)
-  
+
+def my_sleep_ms(ms):
+    for i in range(ms//10):
+        utime.sleep_ms(10)
+        getData()
+
+j = 0
+
+def led(speed):
+    global np, j
+    while j<1000:
+        for i in range(8):
+            np[i]=(0,0,0)
+    #     if speed<15:
+    #         np[1] = (0,0,200)
+    #     elif 15<speed<25:
+    #         np[2] = (0,200,0)
+    #     else:
+    #         np[3] = (200,0,0)
+        np.write()
+        my_sleep_ms(100)
+    j=0
+    
 display(0)
 while True:
-    getData()
+    my_sleep_ms(100)
+    led(40)
     
