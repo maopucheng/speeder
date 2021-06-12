@@ -25,38 +25,45 @@ pin = Pin(22, Pin.OUT, Pin.PULL_UP)
 np = NeoPixel(pin, 8)
 
 # init其他所有参数
-speed = 0
-position = False  # 磁铁位置：在感应区为T，不在感应区为F
-i = 0  # 定义计数器
-wheel_len = 3  # 自行车轮子周长，单位，米
-last_time = utime.ticks_ms()  # 上次时间点
+WHEEL_LEN = 10  # 常量，自行车轮子周长，单位，米
+
+g_speed = 0
+g_position = False  # 磁铁位置：在感应区为T，不在感应区为F
+g_count = 0  # 定义计数器
+g_last_time = utime.ticks_ms()  # 上次时间点
 now = utime.ticks_ms()  # 当前时间点
-time_gap = utime.ticks_diff(now, last_time)  # 两个时间点的时间差，单位毫秒
+g_time_gap = utime.ticks_diff(now, g_last_time)  # 两个时间点的时间差，单位毫秒
 g_distance = 0 #骑行距离
-first_time = now
+g_first_time = now
 g_time = 0 #骑行时间
+g_break = False
 
 def getData():
-    global speed, position, i, wheel_len
-    global last_time, now, time_gap
-    global g_distance, g_time
+    global g_speed, g_position, g_count, WHEEL_LEN
+    global g_last_time, now, g_time_gap
+    global g_distance, g_time, g_break
     # 读取当前状态，status为0，表示有磁力感应到
     status = hall.value()
 
-    if status == 0 and position == False:
-        i += 1
+    if status == 0 and g_position == False:
+        g_count += 1
         now = utime.ticks_ms()
-        time_gap = utime.ticks_diff(now, last_time)  # 注意是毫秒
-        if time_gap != 0:
-            speed = int(wheel_len/(time_gap/1000)*3.6)
-        last_time = now
-        position = True  # 设置磁铁位置
-        g_distance = wheel_len*i #骑行距离
-        print(speed, "km/h", "i=", i)
-        g_time = utime.ticks_diff(now, first_time)   
-        display(speed,g_distance/1000,int(g_time/1000))     
+        g_time_gap = utime.ticks_diff(now, g_last_time)  # 注意是毫秒
+        if g_time_gap != 0:
+            now_speed = int(WHEEL_LEN/(g_time_gap/1000)*3.6)
+            if now_speed<(g_speed-2): #刹车了
+                g_break = True
+            else:
+                g_break = False
+            g_speed = now_speed
+        g_last_time = now
+        g_position = True  # 设置磁铁位置
+        g_distance = WHEEL_LEN*g_count #骑行距离
+        print(g_speed, "km/h", "i=", g_count, g_break)
+        g_time = utime.ticks_diff(now, g_first_time)   
+        display(g_speed,g_distance/1000,int(g_time/1000))     
     elif status == 1:
-        position = False  # 设置磁铁位置
+        g_position = False  # 设置磁铁位置
 
 def display(speed, distance=0 , seconds=0):
   
@@ -81,25 +88,59 @@ def my_sleep_ms(ms):
         utime.sleep_ms(10)
         getData()
 
-j = 0
+def run_led(speed):
+    global np
+    n = np.n
+    if g_break: #刹车红灯警示
+        for i in range(2): 
+            np.fill((0,0,0))
+            np.write()
+            my_sleep_ms(100)
+            np.fill((128,0,0))
+            np.write()
+            my_sleep_ms(100)
+    else: #速度灯效
+        if speed<10:
+            #彩虹
+            for j in range(16): #按顺序移动灯色
+                for i in range(n): #设置每个灯的彩虹色，将256色平均分
+                    rc_index = (i * 256 // n) + int(j*16)
+                    np[i] = color_map(rc_index & 255)
+                np.write()
+                my_sleep_ms(50) #移动速度
+        elif 10<=speed<20:
+            # 滚珠
+            for i in range(4 * n):
+                for j in range(n):
+                    np[j] = (0, 0, 0)
+                np[i % n] = (255, 255, 255)
+                np.write()
+                my_sleep_ms(30)
+        elif speed>=20:
+            # 弹球
+            for i in range(4 * n):
+                for j in range(n):
+                    np[j] = (0, 100, 0)
+                if (i // n) % 2 == 0:
+                    np[i % n] = (0, 0, 0)
+                else:
+                    np[n - 1 - (i % n)] = (0, 0, 0)
+                np.write()
+                my_sleep_ms(50)
 
-def led(speed):
-    global np, j
-    while j<1000:
-        for i in range(8):
-            np[i]=(0,0,0)
-    #     if speed<15:
-    #         np[1] = (0,0,200)
-    #     elif 15<speed<25:
-    #         np[2] = (0,200,0)
-    #     else:
-    #         np[3] = (200,0,0)
-        np.write()
-        my_sleep_ms(100)
-    j=0
-    
+#辅助函数，将灯分成256个颜色，类似HSL模式
+def color_map(pos): 
+    if pos < 0 or pos > 255:
+        return (0, 0, 0)
+    if pos < 85:
+        return (255 - pos * 3, pos * 3, 0)
+    if pos < 170:
+        pos -= 85
+        return (0, 255 - pos * 3, pos * 3)
+    pos -= 170
+    return (pos * 3, 0, 255 - pos * 3)
+
 display(0)
 while True:
-    my_sleep_ms(100)
-    led(40)
-    
+    run_led(g_speed)
+
