@@ -128,7 +128,7 @@ def run_led(speed):
                 np.write()
                 my_sleep_ms(50)
 
-#辅助函数，将灯分成256个颜色，类似HSL模式
+#辅助函数，将灯分成256个颜色，类似HSB模式
 def color_map(pos): 
     if pos < 0 or pos > 255:
         return (0, 0, 0)
@@ -143,4 +143,7 @@ def color_map(pos):
 display(0)
 while True:
     run_led(g_speed)
-
+    # for i in range(256):
+    #     np.fill(color_map(i))
+    #     np.write()
+    #     utime.sleep_ms(100)
