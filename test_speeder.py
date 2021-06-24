@@ -5,8 +5,13 @@ from neopixel import NeoPixel
 import vga1_bold_16x32 as font1
 import vga1_bold_16x16 as font2
 
-#初始化引脚
+#初始化霍尔传感器输入引脚
+#经过测试，改良为干簧管
 hall = Pin(36, Pin.IN)
+
+#初始化LED灯带输出引脚
+pin = Pin(22, Pin.OUT, Pin.PULL_UP)
+np = NeoPixel(pin, 8)
 
 #初始化显示屏
 tft = st7789.ST7789(
@@ -20,9 +25,7 @@ tft = st7789.ST7789(
     rotation=3)
 tft.init()
 
-#初始化LED灯带
-pin = Pin(22, Pin.OUT, Pin.PULL_UP)
-np = NeoPixel(pin, 8)
+
 
 # init其他所有参数
 WHEEL_LEN = 10  # 常量，自行车轮子周长，单位，米
@@ -75,8 +78,8 @@ def display(speed, distance=0 , seconds=0):
     #line2:speed
     tft.text(font1, "SPEED:", 5, 50, st7789.YELLOW, st7789.BLACK)
     tft.fill_rect(5+16*6, 50, 16*2, 32, st7789.BLACK)
-    tft.text(font1, '{:0>2d}'.format(speed), 5+16*6, 50, st7789.YELLOW, st7789.BLACK)
-    tft.text(font1, "KM/H", 5+16*8, 50, st7789.YELLOW, st7789.BLACK)
+    tft.text(font1, '{:0>2.1f}'.format(speed), 5+16*6, 50, st7789.YELLOW, st7789.BLACK)
+    tft.text(font1, "KM/H", 5+16*10, 50, st7789.YELLOW, st7789.BLACK)
     #line3:distance
     tft.text(font2, "dist:", 5, 105, st7789.WHITE, st7789.BLACK)
     tft.fill_rect(5+16*5, 105-16, 16*5, 32, st7789.BLACK)
